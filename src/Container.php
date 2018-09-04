@@ -19,14 +19,14 @@ class Container implements ContainerInterface
     /**
      * Array of all contained bindings.
      *
-     * @var Collection
+     * @var \mrcrmn\Collection\Collection
      */
     protected $bindings;
 
     /**
      * Array of all aliased bindings.
      *
-     * @var Collection
+     * @var \mrcrmn\Collection\Collection
      */
     protected $aliases;
 
@@ -70,7 +70,7 @@ class Container implements ContainerInterface
      * Else it just returns the given value.
      *
      * @param Closure|object $object
-     * @return obejct
+     * @return object
      */
     protected function getObject($object, $id)
     {
