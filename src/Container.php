@@ -3,17 +3,19 @@
 namespace mrcrmn\Container;
 
 use Closure;
-use mrcrmn\Container\Caller;
-use mrcrmn\Container\Factory;
-use mrcrmn\Container\Resolver;
 use mrcrmn\Collection\Collection;
 use Psr\Container\ContainerInterface;
+use mrcrmn\Container\Traits\CallsFunctions;
+use mrcrmn\Container\Traits\CreatesObjects;
+use mrcrmn\Container\Traits\ResolvesArguments;
 use mrcrmn\Container\Exceptions\MissingEntityException;
 use mrcrmn\Container\Exceptions\EntityAlreadyExistsException;
 use mrcrmn\Container\Exceptions\DifferentTypeExcpectedException;
 
 class Container implements ContainerInterface
 {
+    use CallsFunctions, CreatesObjects, ResolvesArguments;
+
     /**
      * Array of all contained bindings.
      *
@@ -183,46 +185,5 @@ class Container implements ContainerInterface
     public function resolve($id)
     {
         return $this->get($id);
-    }
-
-    /**
-     * Resolves arguments for a given method or function.
-     * 
-     * if $method is null, we assume that the user
-     * wants to resolve arguments for a function
-     *
-     * @param string|object $class
-     * @param string|null $method
-     * @return array
-     */
-    protected function resolveArguments($class, $method = null)
-    {
-        return Resolver::getArguments($class, $method, $this);
-    }
-
-    /**
-     * Calls resolves arguments for a method on a class an calls it.
-     * 
-     * If $method is null, we assume,
-     * that the user wants to call a function, not a method.
-     *
-     * @param object|string $object
-     * @param string $method
-     * @return mixed
-     */
-    public function call($object, $method = null)
-    {
-        return Caller::call($object, $method, $this->resolveArguments($object, $method));
-    }
-
-    /**
-     * Automatically constructs an object with container bindings.
-     *
-     * @param string $class
-     * @return object
-     */
-    public function make($class)
-    {
-        return Factory::create($class, $this->resolveArguments($class, '__construct'));
     }
 }

@@ -2,8 +2,8 @@
 
 namespace mrcrmn\Container;
 
-use mrcrmn\Container\Container;
 use mrcrmn\Container\Reflector;
+use Psr\Container\ContainerInterface;
 
 class Resolver
 {
@@ -17,7 +17,7 @@ class Resolver
     /**
      * The container instance.
      *
-     * @var \mrcrmn\Container\Container
+     * @var \Psr\Container\ContainerInterface
      */
     protected $container;
 
@@ -25,9 +25,9 @@ class Resolver
      * The constructor.
      *
      * @param string|object $class
-     * @param \mrcrmn\Container\Container $container
+     * @param \Psr\Container\ContainerInterface $container
      */
-    public function __construct($class, Container $container)
+    public function __construct($class, ContainerInterface $container)
     {
         $this->class = Reflector::getClassName($class);
         $this->container = $container;
@@ -38,10 +38,10 @@ class Resolver
      *
      * @param string|object $class
      * @param string $method
-     * @param \mrcrmn\Container\Container $container
+     * @param \Psr\Container\ContainerInterface $container
      * @return array
      */
-    public static function getArguments($class, $method = null, Container $container)
+    public static function getArguments($class, $method = null, ContainerInterface $container)
     {
         return (new static($class, $container))->resolveMethod($method);
     }
