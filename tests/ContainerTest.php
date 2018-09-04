@@ -24,7 +24,9 @@ class NoTypeHint {
     }
 }
 
-class Testing2 {
+interface TestInterface {}
+
+class Testing2 implements TestInterface {
     public $testing;
 
     public function __construct(Testing $testing)
@@ -104,6 +106,24 @@ class ContainerTest extends TestCase
         $object = $container->make(Testing2::class);
 
         $this->assertTrue($object->testing->var);
+    }
+
+    public function test_an_exception_is_thrown_when_the_set_object_isnt_an_isntace_of_the_expected_class_name()
+    {
+        $this->expectException(DifferentTypeExcpectedException::class);
+
+        $container = new Container();
+        $container->set(TestInterface::class, new Testing);
+    }
+
+    public function test_an_exception_is_thrown_when_the_given_callback_result_isnt_an_isntace_of_the_expected_class_name()
+    {
+        $this->expectException(DifferentTypeExcpectedException::class);
+
+        $container = new Container();
+        $container->set(TestInterface::class, function() {
+            return new Testing;
+        });
     }
 
     public function test_binding_something_that_already_exists_throws_an_error()

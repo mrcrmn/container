@@ -13,35 +13,35 @@ use mrcrmn\Container\Exceptions\DifferentTypeExcpectedException;
 class Container implements ContainerInterface
 {
     /**
-     * Array of all contained entities.
+     * Array of all contained bindings.
      *
      * @var Collection
      */
-    protected $entities;
+    protected $bindings;
 
     /**
-     * Array of all aliased entities.
+     * Array of all aliased bindings.
      *
      * @var Collection
      */
     protected $aliases;
 
     /**
-     * The Constructor creates an entity collection.
+     * The Constructor creates the bindings and alias collections.
      */
     public function __construct()
     {
-        $this->entities = new Collection();
+        $this->bindings = new Collection();
         $this->aliases = new Collection();
     }
 
     /**
-     * Protects entities from being overwritten.
+     * Protects bindings from being overwritten.
      *
      * @param string $id
      * @return void
      */
-    protected function guardEntities($id) {
+    protected function guardBindings($id) {
         if ($this->has($id)) {
             throw new EntityAlreadyExistsException("Entity does already exists in the Container.");
         }
@@ -76,8 +76,8 @@ class Container implements ContainerInterface
      */
     public function set($id, $object, $alias = null)
     {
-        $this->guardEntities($id);
-        $this->entities->set($id, $this->getObject($object, $id));
+        $this->guardBindings($id);
+        $this->bindings->set($id, $this->getObject($object, $id));
 
         if (isset($alias)) {
             $this->aliases->set($alias, $id);
@@ -108,8 +108,8 @@ class Container implements ContainerInterface
      */
     public function argument($id, $value)
     {
-        $this->guardEntities($id);
-        $this->entities->set($id, $value);
+        $this->guardBindings($id);
+        $this->bindings->set($id, $value);
 
         return $this;
     }
@@ -122,7 +122,7 @@ class Container implements ContainerInterface
      */
     public function has($id)
     {
-        return $this->entities->has($id) || $this->aliases->has($id);
+        return $this->bindings->has($id) || $this->aliases->has($id);
     }
 
     /**
@@ -142,8 +142,8 @@ class Container implements ContainerInterface
         // If so we use the resolved alias value as a key for
         // the main container.
         return $this->aliases->has($id)
-             ? $this->entities->get($this->aliases->get($id)) 
-             : $this->entities->get($id);
+             ? $this->bindings->get($this->aliases->get($id)) 
+             : $this->bindings->get($id);
     }
 
     /**
