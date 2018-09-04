@@ -4,6 +4,7 @@ namespace mrcrmn\Container;
 
 use Closure;
 use mrcrmn\Container\Factory;
+use mrcrmn\Container\Resolver;
 use mrcrmn\Container\Reflector;
 use mrcrmn\Collection\Collection;
 use Psr\Container\ContainerInterface;
@@ -185,29 +186,15 @@ class Container implements ContainerInterface
     }
 
     /**
-     * Resolves the arguments for a function call.
+     * Resolves arguments for a given method.
      *
-     * @param string $class
+     * @param string|object $class
+     * @param string $method
      * @return array
      */
-    protected function resolveArguments($class, $method) {
-        return array_map(function($argument) use ($class, $method) {
-            if (! $this->has($argument)) {
-                throw new MissingEntityException("Can't resolve arguments for '".Reflector::getClassName($class)."::{$method}'. '{$argument}' is missing in the Container.");
-            }
-            return $this->get($argument);
-        }, $this->reflectMethod($class, $method));
-    }
-
-    /**
-     * Resolves single arguments or binding from the container.
-     *
-     * @param Collection $arguments
-     * @return array
-     */
-    protected function reflectMethod($class, $method)
+    protected function resolveArguments($class, $method)
     {
-        return (new Reflector($class))->reflect($method);
+        return Resolver::getArguments($class, $method, $this);
     }
 
     /**

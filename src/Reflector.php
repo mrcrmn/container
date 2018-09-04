@@ -20,6 +20,18 @@ class Reflector extends ReflectionClass
     }
 
     /**
+     * Static call to return a method reflection.
+     *
+     * @param string|object $class
+     * @param string $method
+     * @return array
+     */
+    public static function reflectMethodOnClass($class, $method)
+    {
+        return (new static($class))->reflect($method);
+    }
+
+    /**
      * Returns the class name from an object or returns the argument if its a string.
      *
      * @param object|string $class
@@ -33,23 +45,47 @@ class Reflector extends ReflectionClass
 
         return $class;
     }
-    
+
     /**
-     * Gets the name of parameters and the type-hinted class name.
+     * Throws an error if the method to reflect doesn't exist.
      *
-     * @return Collection
+     * @param string $method
+     * @return void
      */
-    public function reflect($method = '__construct')
+    protected function guardMethod($method)
     {
         if (! $this->hasMethod($method)) {
             throw new InvalidMethodException("Method: '{$method}' doesn't exists on '{$this->getName()}'");
         }
+    }
 
-        $method = $this->getMethod($method);
+    /**
+     * Gets the parameters of the method on this class.
+     *
+     * @param string $method
+     * @return \ReflectionParameter[]
+     */
+    protected function getParametersForMethod($method)
+    {
+        return $this->getMethod($method)->getParameters();
+    }
+    
+    /**
+     * Returns an array the methods parameter names, or type hinted class names.
+     *
+     * @return array
+     */
+    public function reflect($method = '__construct')
+    {
+        // Throw an exception if the method doesn't exists.
+        $this->guardMethod($method);
 
         return array_map(function($parameter) {
-            $class = $parameter->getClass();
-            return isset($class->name) ? $class->name : $parameter->name;
-        }, $method->getParameters());
+            // We first check if the parameter has a type hinted class,
+            // if so we return the class name, else just the name.
+            return ! is_null($parameter->getClass())
+                   ? $parameter->getClass()->name
+                   : $parameter->name;
+        }, $this->getParametersForMethod($method));
     }
 }

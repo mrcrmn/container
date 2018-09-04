@@ -51,6 +51,8 @@ class Testing2 implements TestInterface {
 
 }
 
+class ExtendsTesting extends Testing2 {}
+
 class ContainerTest extends TestCase
 {
     public function setUp() {
@@ -173,6 +175,20 @@ class ContainerTest extends TestCase
         $this->assertTrue(
             $container->call($object, 'callMe'/* Maybe */)
         );
+    }
+
+    public function test_it_can_resolve_methods_which_are_defined_on_an_inherited_class()
+    {
+        $container = new Container();
+        $container->set(Testing::class, new Testing);
+        $container->argument('argument', true);
+
+        $object = $container->make(ExtendsTesting::class);
+
+        $this->assertTrue(
+            $container->call($object, 'callMe')
+        );
+        $this->assertTrue($object->testing->var);
     }
 
     public function test_it_can_call_static_methods_on_an_object()
