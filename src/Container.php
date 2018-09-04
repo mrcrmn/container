@@ -3,6 +3,7 @@
 namespace mrcrmn\Container;
 
 use Closure;
+use mrcrmn\Container\Factory;
 use mrcrmn\Container\Reflector;
 use mrcrmn\Collection\Collection;
 use Psr\Container\ContainerInterface;
@@ -229,6 +230,6 @@ class Container implements ContainerInterface
      */
     public function make($class)
     {
-        return new $class(...$this->resolveArguments($class, '__construct'));
+        return Factory::create($class, $this->resolveArguments($class, '__construct'));
     }
 }

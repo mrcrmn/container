@@ -95,6 +95,17 @@ class ContainerTest extends TestCase
         $this->assertTrue($object->testing->var);
     }
 
+    public function test_it_can_create_a_new_instance_of_a_given_object()
+    {
+        $container = new Container();
+        $container->set(Testing::class, new Testing, 'test');
+
+        $object = $container->make(NoTypeHint::class);
+        $object2 = $container->make($object);
+
+        $this->assertTrue($object2->testing->var);
+    }
+
     public function test_it_binds_itself_to_the_container_once_instanciated()
     {
         $container = new Container('alias');
