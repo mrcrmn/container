@@ -3,6 +3,8 @@
 namespace mrcrmn\Container;
 
 use ReflectionClass;
+use ReflectionFunction;
+use ReflectionParameter;
 use mrcrmn\Container\Container;
 use mrcrmn\Collection\Collection;
 use mrcrmn\Container\Exceptions\InvalidMethodException;
@@ -29,6 +31,17 @@ class Reflector extends ReflectionClass
     public static function reflectMethodOnClass($class, $method)
     {
         return (new static($class))->reflect($method);
+    }
+
+    /**
+     * Gets the functions parameters.
+     *
+     * @param string $function
+     * @return array
+     */
+    public static function reflectFunction($function)
+    {
+        return array_map(array(static::class, 'reflectParameter'), (new ReflectionFunction($function))->getParameters());
     }
 
     /**
@@ -69,6 +82,20 @@ class Reflector extends ReflectionClass
     {
         return $this->getMethod($method)->getParameters();
     }
+
+    /**
+     * Returns the parameter name.
+     *
+     * @return string
+     */
+    protected static function reflectParameter(ReflectionParameter $parameter)
+    {
+        // We first check if the parameter has a type hinted class,
+        // if so we return the class name, else just the name.
+        return ! is_null($parameter->getClass())
+               ? $parameter->getClass()->name
+               : $parameter->name;
+    }
     
     /**
      * Returns an array the methods parameter names, or type hinted class names.
@@ -80,12 +107,6 @@ class Reflector extends ReflectionClass
         // Throw an exception if the method doesn't exists.
         $this->guardMethod($method);
 
-        return array_map(function($parameter) {
-            // We first check if the parameter has a type hinted class,
-            // if so we return the class name, else just the name.
-            return ! is_null($parameter->getClass())
-                   ? $parameter->getClass()->name
-                   : $parameter->name;
-        }, $this->getParametersForMethod($method));
+        return array_map(array(static::class, 'reflectParameter'), $this->getParametersForMethod($method));
     }
 }

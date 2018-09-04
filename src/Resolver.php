@@ -8,7 +8,7 @@ use mrcrmn\Container\Reflector;
 class Resolver
 {
     /**
-     * The classname.
+     * The class or function name.
      *
      * @var string
      */
@@ -25,7 +25,7 @@ class Resolver
      * The constructor.
      *
      * @param string|object $class
-     * @param string $method
+     * @param \mrcrmn\Container\Container $container
      */
     public function __construct($class, Container $container)
     {
@@ -38,33 +38,38 @@ class Resolver
      *
      * @param string|object $class
      * @param string $method
+     * @param \mrcrmn\Container\Container $container
      * @return array
      */
-    public static function getArguments($class, $method, Container $container)
+    public static function getArguments($class, $method = null, Container $container)
     {
         return (new static($class, $container))->resolveMethod($method);
     }
 
     /**
-     * Resolves the arguments for a function call.
+     * Resolves the arguments for a method.
      *
-     * @param string $class
+     * @param string $method
      * @return array
      */
-    protected function resolveMethod($method) {
+    protected function resolveMethod($method = null) {
         return array_map(function($argument) {
             return $this->container->get($argument);
-        }, $this->reflectMethod($this->class, $method));
+        }, $this->reflectMethod($method));
     }
 
     /**
-     * Resolves single arguments or binding from the container.
+     * Reflects a method on this class and returns the arguments.
      *
-     * @param Collection $arguments
+     * @param string $method
      * @return array
      */
-    protected function reflectMethod($class, $method)
+    protected function reflectMethod($method = null)
     {
-        return Reflector::reflectMethodOnClass($class, $method);
+        if (is_null($method)) {
+            return Reflector::reflectFunction($this->class);
+        }
+
+        return Reflector::reflectMethodOnClass($this->class, $method);
     }
 }

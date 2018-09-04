@@ -3,9 +3,9 @@
 namespace mrcrmn\Container;
 
 use Closure;
+use mrcrmn\Container\Caller;
 use mrcrmn\Container\Factory;
 use mrcrmn\Container\Resolver;
-use mrcrmn\Container\Reflector;
 use mrcrmn\Collection\Collection;
 use Psr\Container\ContainerInterface;
 use mrcrmn\Container\Exceptions\MissingEntityException;
@@ -186,27 +186,33 @@ class Container implements ContainerInterface
     }
 
     /**
-     * Resolves arguments for a given method.
+     * Resolves arguments for a given method or function.
+     * 
+     * if $method is null, we assume that the user
+     * wants to resolve arguments for a function
      *
      * @param string|object $class
-     * @param string $method
+     * @param string|null $method
      * @return array
      */
-    protected function resolveArguments($class, $method)
+    protected function resolveArguments($class, $method = null)
     {
         return Resolver::getArguments($class, $method, $this);
     }
 
     /**
-     * Calls a function on an object or class.
+     * Calls resolves arguments for a method on a class an calls it.
+     * 
+     * If $method is null, we assume,
+     * that the user wants to call a function, not a method.
      *
      * @param object|string $object
      * @param string $method
      * @return mixed
      */
-    public function call($object, $method)
+    public function call($object, $method = null)
     {
-        return call_user_func_array(array($object, $method), $this->resolveArguments($object, $method));
+        return Caller::call($object, $method, $this->resolveArguments($object, $method));
     }
 
     /**

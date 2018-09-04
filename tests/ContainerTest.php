@@ -53,6 +53,16 @@ class Testing2 implements TestInterface {
 
 class ExtendsTesting extends Testing2 {}
 
+function testFunction($argument)
+{
+    return $argument;
+}
+
+function testingFunction(Testing $argument)
+{
+    return $argument;
+}
+
 class ContainerTest extends TestCase
 {
     public function setUp() {
@@ -198,6 +208,21 @@ class ContainerTest extends TestCase
 
         $this->assertTrue(
             $container->call(Testing2::class, 'callStatic')
+        );
+    }
+
+    public function test_it_can_call_functions()
+    {
+        $container = new Container();
+        $container->argument('argument', true);
+        $container->set(Testing::class, new Testing);
+
+        $this->assertTrue(
+            $container->call('\mrcrmn\Container\Tests\testFunction')
+        );
+
+        $this->assertTrue(
+            $container->call('\mrcrmn\Container\Tests\testingFunction')->var
         );
     }
 
