@@ -172,24 +172,29 @@ class Container implements ContainerInterface
     }
 
     /**
-     * Automatically constructs an object with parameters contained in the core.
-     *
-     * @param string $class
-     * @return object
-     */
-    public function make($class)
-    {
-        return new $class(...$this->resolveArguments($class, '__construct'));
-    }
-
-    /**
      * Resolves the arguments for a function call.
      *
      * @param string $class
      * @return array
      */
     protected function resolveArguments($class, $method) {
-        return $this->reflectMethod((new Reflector($class))->reflect($method));
+        return array_map(function($argument) {
+            if (! $this->has($argument)) {
+                throw new MissingEntityException("Can't create Object. '{$argument}' is missing in the Container.");
+            }
+            return $this->get($argument);
+        }, $this->reflectMethod($class, $method));
+    }
+
+    /**
+     * Resolves single arguments or binding from the container.
+     *
+     * @param Collection $arguments
+     * @return array
+     */
+    protected function reflectMethod($class, $method)
+    {
+        return (new Reflector($class))->reflect($method);
     }
 
     /**
@@ -205,18 +210,13 @@ class Container implements ContainerInterface
     }
 
     /**
-     * Resolves single arguments or binding from the container.
+     * Automatically constructs an object with parameters contained in the core.
      *
-     * @param Collection $arguments
-     * @return array
+     * @param string $class
+     * @return object
      */
-    protected function reflectMethod($arguments)
+    public function make($class)
     {
-        return array_map(function($argument) {
-            if (! $this->has($argument)) {
-                throw new MissingEntityException("Can't create Object. '{$argument}' is missing in the Container.");
-            }
-            return $this->get($argument);
-        }, $arguments);
+        return new $class(...$this->resolveArguments($class, '__construct'));
     }
 }
