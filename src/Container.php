@@ -28,23 +28,37 @@ class Container implements ContainerInterface
 
     /**
      * The Constructor creates the bindings and alias collections.
+     * Also binds itself to the container.
      */
-    public function __construct()
+    public function __construct($alias = null)
     {
         $this->bindings = new Collection();
         $this->aliases = new Collection();
+
+        $this->bindSelf($alias);
     }
 
     /**
      * Protects bindings from being overwritten.
      *
      * @param string $id
-     * @return void
+     * @return mixed
      */
     protected function guardBindings($id) {
         if ($this->has($id)) {
             throw new EntityAlreadyExistsException("Entity does already exists in the Container.");
         }
+    }
+
+    /**
+     * Binds itself to the container using the given alias.
+     *
+     * @param string $alias
+     * @return $this
+     */
+    protected function bindSelf($alias = null)
+    {
+        return $this->set(static::class, $this, $alias);
     }
 
     /**
@@ -94,7 +108,7 @@ class Container implements ContainerInterface
      * @param string $alias
      * @return $this
      */
-    public function entity($id, $object, $alias = null)
+    public function bind($id, $object, $alias = null)
     {
         return $this->set($id, $object, $alias);
     }
@@ -165,35 +179,44 @@ class Container implements ContainerInterface
      */
     public function make($class)
     {
-        $resolved = $this->resolveObjectsForConstructor(
-            (new Reflector($class))->reflect()
-        );
-
-        return new $class(...$resolved);
-    }
-
-    public function call($object, $method)
-    {
-        $resolved = $this->resolveObjectsForConstructor(
-            (new Reflector(get_class($object)))->reflect($method)
-        );
-
-        return $object->{$method}(...$resolved);
+        return new $class(...$this->resolveArguments($class, '__construct'));
     }
 
     /**
-     * Resolves single arguments or entity objects from the container.
+     * Resolves the arguments for a function call.
+     *
+     * @param string $class
+     * @return array
+     */
+    protected function resolveArguments($class, $method) {
+        return $this->reflectMethod((new Reflector($class))->reflect($method));
+    }
+
+    /**
+     * Calls a function on an object or class.
+     *
+     * @param object|string $object
+     * @param string $method
+     * @return mixed
+     */
+    public function call($object, $method)
+    {
+        return call_user_func_array(array($object, $method), $this->resolveArguments($object, $method));
+    }
+
+    /**
+     * Resolves single arguments or binding from the container.
      *
      * @param Collection $arguments
      * @return array
      */
-    protected function resolveObjectsForConstructor(Collection $arguments)
+    protected function reflectMethod($arguments)
     {
-        return $arguments->map(function($argument) {
-            if ($this->has($argument)) {
-                return $this->resolve($argument);
+        return array_map(function($argument) {
+            if (! $this->has($argument)) {
+                throw new MissingEntityException("Can't create Object. '{$argument}' is missing in the Container.");
             }
-            throw new MissingEntityException("Can't create Object. '{$argument}' is missing in the Container.");
-        })->toArray();
+            return $this->get($argument);
+        }, $arguments);
     }
 }

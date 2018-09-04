@@ -39,6 +39,11 @@ class Testing2 implements TestInterface {
         return $argument;
     }
 
+    public static function callStatic($argument)
+    {
+        return $argument;
+    }
+
     public function throwsError($whatAmI)
     {
         return $whatAmI;
@@ -48,6 +53,10 @@ class Testing2 implements TestInterface {
 
 class ContainerTest extends TestCase
 {
+    public function setUp() {
+        parent::setUp();
+        ini_set('display_errors', 1);
+    }
 
     public function test_it_can_set_objects()
     {
@@ -69,7 +78,7 @@ class ContainerTest extends TestCase
     public function test_it_can_give_objects_via_alias()
     {
         $container = new Container();
-        $container->set(Testing::class, new Testing, 'test');
+        $container->bind(Testing::class, new Testing, 'test');
 
         $resolved = $container->get('test');
 
@@ -84,6 +93,13 @@ class ContainerTest extends TestCase
         $object = $container->make(NoTypeHint::class);
 
         $this->assertTrue($object->testing->var);
+    }
+
+    public function test_it_binds_itself_to_the_container_once_instanciated()
+    {
+        $container = new Container('alias');
+
+        $this->assertInstanceOf(Container::class, $container->get('alias'));
     }
 
     public function test_the_bound_argument_can_be_set_via_a_closure()
@@ -145,6 +161,16 @@ class ContainerTest extends TestCase
 
         $this->assertTrue(
             $container->call($object, 'callMe'/* Maybe */)
+        );
+    }
+
+    public function test_it_can_call_static_methods_on_an_object()
+    {
+        $container = new Container();
+        $container->argument('argument', true);
+
+        $this->assertTrue(
+            $container->call(Testing2::class, 'callStatic')
         );
     }
 
