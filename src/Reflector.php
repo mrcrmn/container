@@ -1,6 +1,6 @@
 <?php
 
-namespace Nhance\Core;
+namespace mrcrmn\Container;
 
 use ReflectionClass;
 use mrcrmn\Container\Container;
@@ -20,7 +20,7 @@ class Reflector
      *
      * @param string $class
      */
-    public function __construct(string $class)
+    public function __construct($class)
     {
         $this->class = $class;
     }
