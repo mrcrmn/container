@@ -5,26 +5,10 @@ namespace mrcrmn\Container;
 use ReflectionClass;
 use mrcrmn\Container\Container;
 use mrcrmn\Collection\Collection;
+use mrcrmn\Container\Exceptions\InvalidMethodException;
 
-class Reflector
+class Reflector extends ReflectionClass
 {
-    /**
-     * The class name to reflect.
-     *
-     * @var string
-     */
-    protected $class;
-
-    /**
-     * The constructor.
-     *
-     * @param string $class
-     */
-    public function __construct($class)
-    {
-        $this->class = $class;
-    }
-
     /**
      * Gets the name of parameters and the type-hinted class name.
      *
@@ -32,13 +16,11 @@ class Reflector
      */
     public function reflect($method = '__construct')
     {
-        $reflector = new ReflectionClass($this->class);
-
-        if (! $reflector->hasMethod($method)) {
-            return new Collection();
+        if (! $this->hasMethod($method)) {
+            throw new InvalidMethodException("Method: '{$method}' doesn't exists on '{$this->getName()}'");
         }
 
-        $method = $reflector->getMethod($method);
+        $method = $this->getMethod($method);
 
         $parameters = new Collection($method->getParameters());
 

@@ -8,6 +8,7 @@ use Psr\Container\NotFoundExceptionInterface;
 use mrcrmn\Container\Exceptions\MissingEntityException;
 use mrcrmn\Container\Exceptions\EntityAlreadyExistsException;
 use mrcrmn\Container\Exceptions\DifferentTypeExcpectedException;
+use mrcrmn\Container\Exceptions\InvalidMethodException;
 
 
 class Testing {
@@ -137,5 +138,16 @@ class ContainerTest extends TestCase
 
         $object = $container->make(Testing2::class);
         $container->call($object, 'throwsError');
+    }
+
+    public function test_trying_to_call_a_method_that_doesnt_exist_on_the_object_throws_an_error()
+    {
+        $this->expectException(InvalidMethodException::class);
+
+        $container = new Container();
+        $container->set(Testing::class, new Testing);
+        $container->call(
+            $container->get(Testing::class), 'invalidMethod'
+        );
     }
 }
