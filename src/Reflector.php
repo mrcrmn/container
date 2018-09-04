@@ -16,11 +16,22 @@ class Reflector extends ReflectionClass
      */
     public function __construct($class)
     {
+        parent::__construct(static::getClassName($class));
+    }
+
+    /**
+     * Returns the class name from an object or returns the argument if its a string.
+     *
+     * @param object|string $class
+     * @return string
+     */
+    public static function getClassName($class)
+    {
         if (! is_string($class)) {
             $class = get_class($class);
         }
 
-        parent::__construct($class);
+        return $class;
     }
     
     /**

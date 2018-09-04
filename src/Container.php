@@ -82,7 +82,7 @@ class Container implements ContainerInterface
     }
 
     /**
-     * Binds an object to the core.
+     * Binds an object to the container.
      *
      * @param string $id
      * @param object $object
@@ -94,10 +94,22 @@ class Container implements ContainerInterface
         $this->bindings->set($id, $this->getObject($object, $id));
 
         if (isset($alias)) {
-            $this->aliases->set($alias, $id);
+            $this->addAlias($alias, $id);
         }
 
         return $this;
+    }
+
+    /**
+     * Sets an alias.
+     *
+     * @param string $alias
+     * @param string $id
+     * @return void
+     */
+    public function addAlias($alias, $id)
+    {
+        $this->aliases->set($alias, $id);
     }
 
     /**
@@ -114,7 +126,7 @@ class Container implements ContainerInterface
     }
 
     /**
-     * Adds a single argument to the core.
+     * Adds a single argument to the Container.
      *
      * @param string $id
      * @param mixed $value
@@ -178,9 +190,9 @@ class Container implements ContainerInterface
      * @return array
      */
     protected function resolveArguments($class, $method) {
-        return array_map(function($argument) {
+        return array_map(function($argument) use ($class, $method) {
             if (! $this->has($argument)) {
-                throw new MissingEntityException("Can't create Object. '{$argument}' is missing in the Container.");
+                throw new MissingEntityException("Can't resolve arguments for '".Reflector::getClassName($class)."::{$method}'. '{$argument}' is missing in the Container.");
             }
             return $this->get($argument);
         }, $this->reflectMethod($class, $method));
@@ -210,7 +222,7 @@ class Container implements ContainerInterface
     }
 
     /**
-     * Automatically constructs an object with parameters contained in the core.
+     * Automatically constructs an object with container bindings.
      *
      * @param string $class
      * @return object
