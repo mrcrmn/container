@@ -5,7 +5,7 @@
     "type": "library",
     "require": {
         "php": ">=5.6",
-        "mrcrmn/collection": "^0.2",
+        "mrcrmn/collection": "dev-master",
         "psr/container": "1.0.0"
     },
     "require-dev": {

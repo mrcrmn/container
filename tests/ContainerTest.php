@@ -6,10 +6,9 @@ use PHPUnit\Framework\TestCase;
 use mrcrmn\Container\Container;
 use Psr\Container\NotFoundExceptionInterface;
 use mrcrmn\Container\Exceptions\MissingEntityException;
+use mrcrmn\Container\Exceptions\InvalidMethodException;
 use mrcrmn\Container\Exceptions\EntityAlreadyExistsException;
 use mrcrmn\Container\Exceptions\DifferentTypeExcpectedException;
-use mrcrmn\Container\Exceptions\InvalidMethodException;
-
 
 class Testing {
     public $var = true;
@@ -51,6 +50,8 @@ class Testing2 implements TestInterface {
 
 }
 
+class HasInterface implements TestInterface {}
+
 class ExtendsTesting extends Testing2 {}
 
 function testFunction($argument)
@@ -78,6 +79,7 @@ class ContainerTest extends TestCase
         $resolved = $container->get(Testing::class);
 
         $this->assertTrue($resolved->var);
+        $this->assertInstanceOf(Testing::class, $resolved);
     }
 
     public function test_it_expects_an_exception_if_we_try_to_resolve_something_that_isnt_contained()
@@ -95,6 +97,7 @@ class ContainerTest extends TestCase
         $resolved = $container->get('test');
 
         $this->assertTrue($resolved->var);
+        $this->assertInstanceOf(Testing::class, $resolved);
     }
 
     public function test_it_can_get_dependencies_even_if_the_object_isnt_typehinted_but_the_var_name_still_does_exist_as_an_alias()
@@ -105,6 +108,8 @@ class ContainerTest extends TestCase
         $object = $container->make(NoTypeHint::class);
 
         $this->assertTrue($object->testing->var);
+        $this->assertInstanceOf(NoTypeHint::class, $object);
+        $this->assertInstanceOf(Testing::class, $container->get('test'));
     }
 
     public function test_it_can_create_a_new_instance_of_a_given_object()
@@ -116,13 +121,16 @@ class ContainerTest extends TestCase
         $object2 = $container->make($object);
 
         $this->assertTrue($object2->testing->var);
+        $this->assertInstanceOf(NoTypeHint::class, $object);
+        $this->assertInstanceOf(NoTypeHint::class, $object2);
+        $this->assertInstanceOf(Testing::class, $container->get('test'));
     }
 
     public function test_it_binds_itself_to_the_container_once_instanciated()
     {
-        $container = new Container('alias');
+        $container = new Container('container_alias');
 
-        $this->assertInstanceOf(Container::class, $container->get('alias'));
+        $this->assertInstanceOf(Container::class, $container->get('container_alias'));
     }
 
     public function test_the_bound_argument_can_be_set_via_a_closure()
@@ -135,6 +143,7 @@ class ContainerTest extends TestCase
         $resolved = $container->get('test');
 
         $this->assertTrue($resolved->var);
+        $this->assertInstanceOf(Testing::class, $resolved);
     }
 
     public function test_it_can_instanciate_objects_with_arguments_resolved_in_the_container()
@@ -145,6 +154,9 @@ class ContainerTest extends TestCase
         $object = $container->make(Testing2::class);
 
         $this->assertTrue($object->testing->var);
+        $this->assertInstanceOf(Testing2::class, $object);
+        $this->assertInstanceOf(Testing::class, $container->get(Testing::class));
+
     }
 
     public function test_an_exception_is_thrown_when_the_set_object_isnt_an_isntace_of_the_expected_class_name()
@@ -185,6 +197,7 @@ class ContainerTest extends TestCase
         $this->assertTrue(
             $container->call($object, 'callMe'/* Maybe */)
         );
+        $this->assertInstanceOf(Testing2::class, $object);
     }
 
     public function test_it_can_resolve_methods_which_are_defined_on_an_inherited_class()
@@ -199,6 +212,7 @@ class ContainerTest extends TestCase
             $container->call($object, 'callMe')
         );
         $this->assertTrue($object->testing->var);
+        $this->assertInstanceOf(ExtendsTesting::class, $object);
     }
 
     public function test_it_can_call_static_methods_on_an_object()
@@ -224,6 +238,8 @@ class ContainerTest extends TestCase
         $this->assertTrue(
             $container->call('\mrcrmn\Container\Tests\testingFunction')->var
         );
+
+        $this->assertInstanceOf(Testing::class, $container->get(Testing::class));
     }
 
     public function test_trying_to_get_a_dependency_not_in_the_container_throws_an_error()
@@ -247,5 +263,15 @@ class ContainerTest extends TestCase
         $container->call(
             $container->get(Testing::class), 'invalidMethod'
         );
+    }
+
+    public function test_it_can_bind_an_implemetation_to_an_interface()
+    {
+        $container = new Container();
+
+        $container->bind(TestInterface::class, new HasInterface);
+
+        $this->assertInstanceOf(TestInterface::class, $container->get(TestInterface::class));
+        $this->assertInstanceOf(HasInterface::class, $container->get(TestInterface::class));
     }
 }
