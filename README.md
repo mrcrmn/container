@@ -6,4 +6,4 @@ Bind objects to the container and resolve them. Instantiate new objects and auto
 
 ## Docs
 
-To read the docs, visit this [page](https://mrcrmn.github.io/packages/di-container/).
+To read the docs, visit this [page](https://mrcrmn.netlify.com/packages/di-container/).
